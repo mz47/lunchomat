@@ -3,24 +3,26 @@ package main
 import (
 	"crypto/sha1"
 	"encoding/base64"
-	"github.com/mz47/lunchomat/database"
-	"github.com/tidwall/gjson"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/mz47/lunchomat/database"
+	"github.com/tidwall/gjson"
 )
 
 var apiChannel = make(chan string)
 var dbChannel = make(chan []string)
-
 var testTemplate *template.Template
 
-const APIKEY = "cn2BthaLGbLT4MGwhXUdAycXtHXmhxWUXmI68TCMyHnx9cHeH66AH9RYQ-IsJSd3Bs_IEhCuIGHnTPvza6J0DLeE_2PQG1lOX2n-0rsrWhHRxwvekLKadG8Ae1LbW3Yx"
-const LON = "10.016290"
-const LAT = "53.554920"
-const RADIUS = "1500"
-const CATEGORIES = "lunch"
+const (
+	_apikey     = "cn2BthaLGbLT4MGwhXUdAycXtHXmhxWUXmI68TCMyHnx9cHeH66AH9RYQ-IsJSd3Bs_IEhCuIGHnTPvza6J0DLeE_2PQG1lOX2n-0rsrWhHRxwvekLKadG8Ae1LbW3Yx"
+	_lon        = "10.016290"
+	_lat        = "53.554920"
+	_radius     = "1500"
+	_categories = "lunch"
+)
 
 func main() {
 	log.Println("starting application")
@@ -30,7 +32,6 @@ func main() {
 }
 
 func startServer() {
-	testTemplate, _ = template.ParseFiles("index.html")
 	http.HandleFunc("/", handleIndex)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
@@ -38,33 +39,32 @@ func startServer() {
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
+	log.Println("New Request registered ...")
+	w.Header().Set("Content-Type", "text/json")
 
 	updateDatabase()
 	database.ReceiveAll()
 	db := database.ReceiveAll()
-	//api := <- apiChannel
-	//db := <- dbChannel
-	//for _, value := range db {
-	//	w.Write([]byte(value))
-	//	w.Write([]byte("\r\n"))
-	//}
 
-	err := testTemplate.Execute(w, db)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	for _, value := range db {
+		w.Write([]byte(value))
+		w.Write([]byte("\n"))
 	}
 }
 
 func updateDatabase() {
-	url := "https://api.yelp.com/v3/businesses/search?latitude=" + LAT + "&longitude=" + LON + "&radius=" + RADIUS + "&categories=" + CATEGORIES
+	url := "https://api.yelp.com/v3/businesses/search?latitude=" +
+		_lat + "&longitude=" +
+		_lon + "&radius=" +
+		_radius + "&categories=" +
+		_categories
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+APIKEY)
+	req.Header.Set("Authorization", "Bearer "+_apikey)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Fatal(err)

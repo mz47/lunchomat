@@ -1,8 +1,9 @@
 package database
 
 import (
-	"go.etcd.io/bbolt"
 	"log"
+
+	"go.etcd.io/bbolt"
 )
 
 var database *bolt.DB
@@ -42,7 +43,6 @@ func Save(key string, value string) {
 		}
 		return nil
 	})
-	log.Println("persisted value:", value)
 }
 
 func ReceiveAll() []string {
