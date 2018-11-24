@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+  lunchomat:
+    image: mz47/lunchomat
+    ports:
+      - "80:8080"
