@@ -1,9 +1,10 @@
 language: go
+sudo: required
 
 services:
 - docker
 
-docker_build:
+script:
 - docker build -t mz47/lunchomat .
 
 echo:
