@@ -1,0 +1,10 @@
+language: go
+
+services:
+- docker
+
+docker_build:
+- docker build -t mz47/lunchomat .
+
+echo:
+- echo "Docker image build"
