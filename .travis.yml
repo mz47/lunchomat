@@ -4,8 +4,4 @@ before_install:
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh  
   - dep ensure
   
-deploy:
-  provider: script
-  script: bash build-main.sh
-  on:
-    branch: master
+script: CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
