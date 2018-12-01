@@ -1,5 +1,5 @@
 deploy:
   provider: script
-  script: bash scripts/deploy.sh
+  script: bash build-main.sh
   on:
     branch: master
