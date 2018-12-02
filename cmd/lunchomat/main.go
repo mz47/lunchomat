@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/mz47/lunchomat/internal/restaurant"
-
 	"github.com/mz47/lunchomat/internal/lunchdb"
+	"github.com/mz47/lunchomat/internal/restaurant"
 	"github.com/tidwall/gjson"
 )
 
@@ -40,7 +39,6 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	log.Println("New Request registered ...")
 	updateDatabase()
 	restaurantes := lunchdb.ReceiveAll()
-
 	template, _ := template.ParseFiles("../../web/index.html")
 	template.Execute(w, restaurantes)
 }
