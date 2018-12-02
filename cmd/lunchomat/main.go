@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/julienschmidt/httprouter"
+
 	"github.com/mz47/lunchomat/internal/lunchdb"
 	"github.com/mz47/lunchomat/internal/restaurant"
 	"github.com/tidwall/gjson"
@@ -31,13 +33,43 @@ func main() {
 }
 
 func startServer() {
-	http.HandleFunc("/", handleIndex)
-	http.ListenAndServe(":8080", nil)
+	router := httprouter.New()
+	router.GET("/", handleIndex)
+	router.GET("/beenthere/:id", handleBeenThere)
+	router.GET("/megusta/:id", handleMeGusta)
+	router.GET("/nomegusta/:id", handleNoMeGusta)
+	router.GET("/ignore/:id", handleIgnore)
+	http.ListenAndServe(":8080", router)
 }
 
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	log.Println("New Request registered ...")
+func handleIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Println("Requesting /")
 	updateDatabase()
+	restaurantes := lunchdb.ReceiveAll()
+	template, _ := template.ParseFiles("../../web/index.html")
+	template.Execute(w, restaurantes)
+}
+
+func handleBeenThere(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Println("Requesting /beenthere for id: ", p.ByName("id"))
+	restaurantes := lunchdb.ReceiveAll()
+	template, _ := template.ParseFiles("../../web/index.html")
+	template.Execute(w, restaurantes)
+}
+func handleMeGusta(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Println("Requesting /megusta for id: ", p.ByName("id"))
+	restaurantes := lunchdb.ReceiveAll()
+	template, _ := template.ParseFiles("../../web/index.html")
+	template.Execute(w, restaurantes)
+}
+func handleNoMeGusta(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Println("Requesting /nomegusta for id: ", p.ByName("id"))
+	restaurantes := lunchdb.ReceiveAll()
+	template, _ := template.ParseFiles("../../web/index.html")
+	template.Execute(w, restaurantes)
+}
+func handleIgnore(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Println("Requesting /ignore for id: ", p.ByName("id"))
 	restaurantes := lunchdb.ReceiveAll()
 	template, _ := template.ParseFiles("../../web/index.html")
 	template.Execute(w, restaurantes)
@@ -70,6 +102,6 @@ func updateDatabase() {
 
 	results := gjson.Get(string(payload), "businesses").Array()
 	for _, value := range results {
-		lunchdb.Save(restaurant.NewRestaurant(value.Get("name").String(), value.Get("distance").Float(), value.Get("rating").Float(), value.Get("url").String()))
+		lunchdb.Save(restaurant.NewRestaurant(value.Get("id").String(), value.Get("name").String(), value.Get("distance").Float(), value.Get("rating").Float(), value.Get("url").String()))
 	}
 }

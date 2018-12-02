@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>Lunchomat <a href="#"><i class="icono-sync"></i></a></h2>
+    <h2>Lunchomat <a href="/"><i class="icono-sync"></i></a></h2>
     <table class="u-full-width">
         <thead>
             <tr>
@@ -27,10 +27,10 @@
                     <td>{{printf "%.2f" .Distance}}</td>
                     <td>{{.Rating}}</td>
                     <td>
-                        <a href="#"><i class="icono-checkCircle"></i></a>
-                        <a href="#"><i class="icono-smile"></i></a>
-                        <a href="#"><i class="icono-frown"></i></a>
-                        <a href="#"><i class="icono-crossCircle"></i></a>
+                        <a href="/beenthere/{{.Id}}"><i class="icono-checkCircle"></i></a>
+                        <a href="/megusta/{{.Id}}"><i class="icono-smile"></i></a>
+                        <a href="/nomegusta/{{.Id}}"><i class="icono-frown"></i></a>
+                        <a href="/ignore/{{.Id}}"><i class="icono-crossCircle"></i></a>
                     </td>
                 </tr>
             {{end}}
