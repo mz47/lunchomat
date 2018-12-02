@@ -4,10 +4,11 @@
   <meta charset="utf-8">
   <title></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/icono/1.3.0/icono.min.css" />
 </head>
 <body>
   <div class="container">
-    <h2>Lunchomat</h2>
+    <h2>Lunchomat <a href="#"><i class="icono-sync"></i></a></h2>
     <table class="u-full-width">
         <thead>
             <tr>
@@ -20,10 +21,17 @@
         <tbody>
             {{range .}}
                 <tr>
-                    <td>{{.Name}}</td>
-                    <td>1</td>
-                    <td>2</td>
-                    <td>XYZ</td>
+                    <td>
+                        <a href="{{.Link}}" target="_blank">{{.Name}}</a>
+                    </td>
+                    <td>{{printf "%.2f" .Distance}}</td>
+                    <td>{{.Rating}}</td>
+                    <td>
+                        <a href="#"><i class="icono-checkCircle"></i></a>
+                        <a href="#"><i class="icono-smile"></i></a>
+                        <a href="#"><i class="icono-frown"></i></a>
+                        <a href="#"><i class="icono-crossCircle"></i></a>
+                    </td>
                 </tr>
             {{end}}
         </tbody>

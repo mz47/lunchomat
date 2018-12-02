@@ -1,12 +1,12 @@
 package main
 
 import (
-	"crypto/sha1"
-	"encoding/base64"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/mz47/lunchomat/internal/restaurant"
 
 	"github.com/mz47/lunchomat/internal/lunchdb"
 	"github.com/tidwall/gjson"
@@ -70,16 +70,8 @@ func updateDatabase() {
 		log.Fatal(err)
 	}
 
-	results := gjson.Get(string(payload), "businesses.#.name").Array()
+	results := gjson.Get(string(payload), "businesses").Array()
 	for _, value := range results {
-		key := generateHash(value.String())
-		lunchdb.Save(key, value.String())
+		lunchdb.Save(restaurant.NewRestaurant(value.Get("name").String(), value.Get("distance").Float(), value.Get("rating").Float(), value.Get("url").String()))
 	}
-}
-
-func generateHash(key string) string {
-	hasher := sha1.New()
-	hasher.Write([]byte(key))
-	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-	return string(sha)
 }

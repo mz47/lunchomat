@@ -1,6 +1,7 @@
 package lunchdb
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/mz47/lunchomat/internal/restaurant"
@@ -28,7 +29,7 @@ func Disconnect() {
 }
 
 // Save key and value in database
-func Save(key string, value string) {
+func Save(r restaurant.Restaurant) {
 	lunchdb.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte("bucket"))
 		if err != nil {
@@ -36,7 +37,13 @@ func Save(key string, value string) {
 			return err
 		}
 
-		err = bucket.Put([]byte(key), []byte(value))
+		rjson, err := json.Marshal(r)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+
+		err = bucket.Put([]byte(r.Name), rjson)
 		if err != nil {
 			log.Fatal(err)
 			return err
@@ -48,11 +55,15 @@ func Save(key string, value string) {
 // ReceiveAll gets all values from database and return restaurant array
 func ReceiveAll() []restaurant.Restaurant {
 	restaurantes := []restaurant.Restaurant{}
+	var item restaurant.Restaurant
 	lunchdb.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("bucket"))
 		bucket.ForEach(func(key, value []byte) error {
-			r := restaurant.NewRestaurant(string(value))
-			restaurantes = append(restaurantes, r)
+			err := json.Unmarshal(value, &item)
+			if err != nil {
+				log.Fatal(err)
+			}
+			restaurantes = append(restaurantes, item)
 			return nil
 		})
 		return nil

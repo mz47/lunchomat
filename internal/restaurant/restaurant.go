@@ -3,26 +3,12 @@ package restaurant
 // Restaurant struct
 type Restaurant struct {
 	Name     string
-	Distance string
-	Rating   string
+	Distance float64
+	Rating   float64
+	Link     string
 }
 
 // NewRestaurant ...
-func NewRestaurant(name string) Restaurant {
-	return Restaurant{name, "distance", "rating"}
-}
-
-// Visit ...
-func (r *Restaurant) Visit() {
-	println("visited ", r.Name)
-}
-
-// SetDistance ...
-func (r *Restaurant) SetDistance(distance string) {
-	r.Distance = distance
-}
-
-// SetRating ...
-func (r *Restaurant) SetRating(rating string) {
-	r.Rating = rating
+func NewRestaurant(name string, distance float64, rating float64, url string) Restaurant {
+	return Restaurant{name, distance, rating, url}
 }
