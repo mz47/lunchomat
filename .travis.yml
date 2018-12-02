@@ -12,5 +12,5 @@ script:
 
 after_success:
   - docker build -t mz47/lunchomat .
-  - docker login -u $DOCKER_USER -p $DOCKER_PASS
+  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - docker push mz47/lunchomat
