@@ -8,9 +8,9 @@ before_install:
   - dep ensure
   
 script:
-  - CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+  - CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main cmd/lunchomat/main.go
 
 after_success:
-  - docker build -t mz47/lunchomat .
+  - docker build -t mz47/lunchomat -f build/Dockerfile .
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - docker push mz47/lunchomat
