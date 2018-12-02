@@ -14,7 +14,6 @@ import (
 
 var apiChannel = make(chan string)
 var dbChannel = make(chan []string)
-var testTemplate *template.Template
 
 const (
 	_apikey     = "cn2BthaLGbLT4MGwhXUdAycXtHXmhxWUXmI68TCMyHnx9cHeH66AH9RYQ-IsJSd3Bs_IEhCuIGHnTPvza6J0DLeE_2PQG1lOX2n-0rsrWhHRxwvekLKadG8Ae1LbW3Yx"
@@ -22,6 +21,7 @@ const (
 	_lat        = "53.554920"
 	_radius     = "1500"
 	_categories = "lunch"
+	_attributes = "GoodForMeal.lunch"
 )
 
 func main() {
@@ -33,30 +33,25 @@ func main() {
 
 func startServer() {
 	http.HandleFunc("/", handleIndex)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		panic(err)
-	}
+	http.ListenAndServe(":8080", nil)
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	log.Println("New Request registered ...")
-	w.Header().Set("Content-Type", "text/json")
-
 	updateDatabase()
 	restaurantes := lunchdb.ReceiveAll()
 
-	for _, restaurant := range restaurantes {
-		w.Write([]byte(restaurant.Name))
-		w.Write([]byte("\n"))
-	}
+	template, _ := template.ParseFiles("../../web/index.html")
+	template.Execute(w, restaurantes)
 }
 
 func updateDatabase() {
-	url := "https://api.yelp.com/v3/businesses/search?latitude=" +
-		_lat + "&longitude=" +
-		_lon + "&radius=" +
-		_radius + "&categories=" +
-		_categories
+	url := "https://api.yelp.com/v3/businesses/search" +
+		"?latitude=" + _lat +
+		"&longitude=" + _lon +
+		"&radius=" + _radius +
+		"&categories=" + _categories +
+		"&attrs=" + _attributes
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -79,7 +74,6 @@ func updateDatabase() {
 	for _, value := range results {
 		key := generateHash(value.String())
 		lunchdb.Save(key, value.String())
-		log.Print(key)
 	}
 }
 

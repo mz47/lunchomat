@@ -51,7 +51,6 @@ func ReceiveAll() []restaurant.Restaurant {
 	lunchdb.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("bucket"))
 		bucket.ForEach(func(key, value []byte) error {
-			//log.Printf("received key: %s, value: %s \n", key, value)
 			r := restaurant.NewRestaurant(string(value))
 			restaurantes = append(restaurantes, r)
 			return nil
