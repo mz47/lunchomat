@@ -51,23 +51,29 @@ func handleIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 }
 
 func handleBeenThere(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	log.Println("Requesting /beenthere for id: ", p.ByName("id"))
-	restaurantes := lunchdb.ReceiveAll()
-	template, _ := template.ParseFiles("../../web/index.html")
-	template.Execute(w, restaurantes)
+	if p.ByName("id") != "" {
+		log.Println("Requesting /beenthere for id: ", p.ByName("id"))
+		lunchdb.UpdateBeenThere(p.ByName("id"))
+	}
+	http.Redirect(w, r, "/", 301)
 }
+
 func handleMeGusta(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	log.Println("Requesting /megusta for id: ", p.ByName("id"))
+	if p.ByName("id") != "" {
+		log.Println("Requesting /megusta for id: ", p.ByName("id"))
+	}
 	restaurantes := lunchdb.ReceiveAll()
 	template, _ := template.ParseFiles("../../web/index.html")
 	template.Execute(w, restaurantes)
 }
+
 func handleNoMeGusta(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	log.Println("Requesting /nomegusta for id: ", p.ByName("id"))
 	restaurantes := lunchdb.ReceiveAll()
 	template, _ := template.ParseFiles("../../web/index.html")
 	template.Execute(w, restaurantes)
 }
+
 func handleIgnore(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	log.Println("Requesting /ignore for id: ", p.ByName("id"))
 	restaurantes := lunchdb.ReceiveAll()
@@ -102,6 +108,14 @@ func updateDatabase() {
 
 	results := gjson.Get(string(payload), "businesses").Array()
 	for _, value := range results {
-		lunchdb.Save(restaurant.NewRestaurant(value.Get("id").String(), value.Get("name").String(), value.Get("distance").Float(), value.Get("rating").Float(), value.Get("url").String()))
+		if !lunchdb.Exists(value.Get("id").String()) {
+			lunchdb.Save(
+				restaurant.NewRestaurant(
+					value.Get("id").String(),
+					value.Get("name").String(),
+					value.Get("distance").Float(),
+					value.Get("rating").Float(),
+					value.Get("url").String()))
+		}
 	}
 }

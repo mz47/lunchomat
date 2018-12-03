@@ -10,13 +10,16 @@ import (
 
 var lunchdb *bolt.DB
 
+const _file = "database.db"
+const _bucket = "bucket"
+
 // Connect establishes a database connection
 func Connect() {
-	db, err := bolt.Open("database.db", 0600, nil)
+	db, err := bolt.Open(_file, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("connected to database: %s \n", "database.db")
+	log.Printf("connected to database: %s \n", _file)
 	lunchdb = db
 }
 
@@ -31,7 +34,7 @@ func Disconnect() {
 // Save key and value in database
 func Save(r restaurant.Restaurant) {
 	lunchdb.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte("bucket"))
+		bucket, err := tx.CreateBucketIfNotExists([]byte(_bucket))
 		if err != nil {
 			log.Fatal(err)
 			return err
@@ -43,7 +46,7 @@ func Save(r restaurant.Restaurant) {
 			return err
 		}
 
-		err = bucket.Put([]byte(r.Name), rjson)
+		err = bucket.Put([]byte(r.Id), rjson)
 		if err != nil {
 			log.Fatal(err)
 			return err
@@ -57,7 +60,7 @@ func ReceiveAll() []restaurant.Restaurant {
 	restaurantes := []restaurant.Restaurant{}
 	var item restaurant.Restaurant
 	lunchdb.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("bucket"))
+		bucket := tx.Bucket([]byte(_bucket))
 		bucket.ForEach(func(key, value []byte) error {
 			err := json.Unmarshal(value, &item)
 			if err != nil {
@@ -69,4 +72,44 @@ func ReceiveAll() []restaurant.Restaurant {
 		return nil
 	})
 	return restaurantes
+}
+
+// UpdateBeenThere updates a restaurant by the given id
+func UpdateBeenThere(id string) {
+	var item restaurant.Restaurant
+	lunchdb.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(_bucket))
+		value := bucket.Get([]byte(id))
+		if value != nil {
+			error := json.Unmarshal(value, &item)
+			if error != nil {
+				log.Fatal(error)
+				return nil
+			}
+		}
+		return nil
+	})
+	if (restaurant.Restaurant{}) != item {
+		log.Println("updated restaurant: ", item)
+		item.TimesVisited++
+		Save(item)
+		log.Println("saved restaurant")
+	} else {
+		log.Println("No result with id: ", id, " found")
+	}
+}
+
+// Exists checks the existance of an id
+func Exists(id string) bool {
+	exists := false
+	lunchdb.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(_bucket))
+		value := bucket.Get([]byte(id))
+		if value != nil {
+			exists = true
+			return nil
+		}
+		return nil
+	})
+	return exists
 }

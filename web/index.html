@@ -15,6 +15,7 @@
                 <td>Name</td>
                 <td>Distance</td>
                 <td>Rating</td>
+                <td>TimesVisited</td>
                 <td>Actions</td>
             </tr>
         </thead>
@@ -26,6 +27,7 @@
                     </td>
                     <td>{{printf "%.2f" .Distance}}</td>
                     <td>{{.Rating}}</td>
+                    <td>{{.TimesVisited}}</td>
                     <td>
                         <a href="/beenthere/{{.Id}}"><i class="icono-checkCircle"></i></a>
                         <a href="/megusta/{{.Id}}"><i class="icono-smile"></i></a>
