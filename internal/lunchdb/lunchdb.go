@@ -90,12 +90,62 @@ func UpdateBeenThere(id string) {
 		return nil
 	})
 	if (restaurant.Restaurant{}) != item {
-		log.Println("updated restaurant: ", item)
+		log.Println("updated restaurant", item.Name)
 		item.TimesVisited++
 		Save(item)
-		log.Println("saved restaurant")
+		log.Println("saved restaurant", item.Name)
 	} else {
-		log.Println("No result with id: ", id, " found")
+		log.Println("No result with id", id, "found")
+	}
+}
+
+// TogglePreferred updates a restaurant by the given id
+func TogglePreferred(id string) {
+	var item restaurant.Restaurant
+	lunchdb.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(_bucket))
+		value := bucket.Get([]byte(id))
+		if value != nil {
+			error := json.Unmarshal(value, &item)
+			if error != nil {
+				log.Fatal(error)
+				return nil
+			}
+		}
+		return nil
+	})
+	if (restaurant.Restaurant{}) != item {
+		log.Println("updated restaurant", item.Name)
+		item.Preferred = !item.Preferred
+		Save(item)
+		log.Println("saved restaurant", item.Name)
+	} else {
+		log.Println("No result with id", id, "found")
+	}
+}
+
+// ToggleIgnored updates a restaurant by the given id
+func ToggleIgnored(id string) {
+	var item restaurant.Restaurant
+	lunchdb.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(_bucket))
+		value := bucket.Get([]byte(id))
+		if value != nil {
+			error := json.Unmarshal(value, &item)
+			if error != nil {
+				log.Fatal(error)
+				return nil
+			}
+		}
+		return nil
+	})
+	if (restaurant.Restaurant{}) != item {
+		log.Println("updated restaurant", item.Name)
+		item.Ignored = !item.Ignored
+		Save(item)
+		log.Println("saved restaurant", item.Name)
+	} else {
+		log.Println("No result with id", id, "found")
 	}
 }
 
@@ -103,7 +153,7 @@ func UpdateBeenThere(id string) {
 func Exists(id string) bool {
 	exists := false
 	lunchdb.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(_bucket))
+		bucket, _ := tx.CreateBucketIfNotExists([]byte(_bucket))
 		value := bucket.Get([]byte(id))
 		if value != nil {
 			exists = true

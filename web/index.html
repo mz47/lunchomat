@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>Lunchomat <a href="/"><i class="icono-sync"></i></a></h2>
+    <h2>Lunchomat <a href="/refresh"><i class="icono-sync"></i></a></h2>
     <table class="u-full-width">
         <thead>
             <tr>
@@ -16,7 +16,9 @@
                 <td>Distance</td>
                 <td>Rating</td>
                 <td>TimesVisited</td>
-                <td>Actions</td>
+                <td>Preferred</td>
+                <td>Ignored</td>
+                <td></td>
             </tr>
         </thead>
         <tbody>
@@ -28,11 +30,12 @@
                     <td>{{printf "%.2f" .Distance}}</td>
                     <td>{{.Rating}}</td>
                     <td>{{.TimesVisited}}</td>
+                    <td>{{.Preferred}}</td>
+                    <td>{{.Ignored}}</td>
                     <td>
-                        <a href="/beenthere/{{.Id}}"><i class="icono-checkCircle"></i></a>
-                        <a href="/megusta/{{.Id}}"><i class="icono-smile"></i></a>
-                        <a href="/nomegusta/{{.Id}}"><i class="icono-frown"></i></a>
-                        <a href="/ignore/{{.Id}}"><i class="icono-crossCircle"></i></a>
+                        <a href="/visited/{{.Id}}"><i class="icono-checkCircle"></i></a>
+                        <a href="/preferred/{{.Id}}"><i class="icono-heart"></i></a>
+                        <a href="/ignored/{{.Id}}"><i class="icono-crossCircle"></i></a>
                     </td>
                 </tr>
             {{end}}

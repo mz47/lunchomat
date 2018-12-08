@@ -25,13 +25,3 @@ func NewRestaurant(id string, name string, distance float64, rating float64, url
 		false,
 	}
 }
-
-// BeenThere increments the amount of times visited the restaurant
-func (r *Restaurant) BeenThere() {
-	r.TimesVisited = r.TimesVisited + 1
-}
-
-// Ignore lets the UI ignore the restaurant
-func (r *Restaurant) Ignore() {
-	r.Ignored = true
-}

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
 
 	"github.com/mz47/lunchomat/internal/lunchdb"
 	"github.com/mz47/lunchomat/internal/restaurant"
@@ -29,56 +29,60 @@ func main() {
 	log.Println("starting application")
 	lunchdb.Connect()
 	defer lunchdb.Disconnect()
+	updateDatabase()
 	startServer()
 }
 
 func startServer() {
-	router := httprouter.New()
-	router.GET("/", handleIndex)
-	router.GET("/beenthere/:id", handleBeenThere)
-	router.GET("/megusta/:id", handleMeGusta)
-	router.GET("/nomegusta/:id", handleNoMeGusta)
-	router.GET("/ignore/:id", handleIgnore)
+	router := chi.NewRouter()
+	router.Get("/", handleIndex)
+	router.Get("/refresh", handleRefresh)
+	router.Get("/visited/{restaurantId}", handleVisited)
+	router.Get("/preferred/{restaurantId}", handlePreferred)
+	router.Get("/ignored/{restaurantId}", handleIgnored)
+
 	http.ListenAndServe(":8080", router)
 }
 
-func handleIndex(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	log.Println("Requesting /")
-	updateDatabase()
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	log.Println("Requesting", r.RequestURI)
 	restaurantes := lunchdb.ReceiveAll()
 	template, _ := template.ParseFiles("../../web/index.html")
 	template.Execute(w, restaurantes)
 }
 
-func handleBeenThere(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	if p.ByName("id") != "" {
-		log.Println("Requesting /beenthere for id: ", p.ByName("id"))
-		lunchdb.UpdateBeenThere(p.ByName("id"))
+func handleRefresh(w http.ResponseWriter, r *http.Request) {
+	log.Println("Requesting", r.RequestURI)
+	restaurantes := lunchdb.ReceiveAll()
+	template, _ := template.ParseFiles("../../web/index.html")
+	template.Execute(w, restaurantes)
+}
+
+func handleVisited(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "restaurantId")
+	if id != "" {
+		log.Println("Requesting", r.RequestURI)
+		lunchdb.UpdateBeenThere(id)
 	}
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/", 302)
 }
 
-func handleMeGusta(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	if p.ByName("id") != "" {
-		log.Println("Requesting /megusta for id: ", p.ByName("id"))
+func handleIgnored(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "restaurantId")
+	if id != "" {
+		log.Println("Requesting", r.RequestURI)
+		lunchdb.ToggleIgnored(id)
 	}
-	restaurantes := lunchdb.ReceiveAll()
-	template, _ := template.ParseFiles("../../web/index.html")
-	template.Execute(w, restaurantes)
+	http.Redirect(w, r, "/", 302)
 }
 
-func handleNoMeGusta(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	log.Println("Requesting /nomegusta for id: ", p.ByName("id"))
-	restaurantes := lunchdb.ReceiveAll()
-	template, _ := template.ParseFiles("../../web/index.html")
-	template.Execute(w, restaurantes)
-}
-
-func handleIgnore(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	log.Println("Requesting /ignore for id: ", p.ByName("id"))
-	restaurantes := lunchdb.ReceiveAll()
-	template, _ := template.ParseFiles("../../web/index.html")
-	template.Execute(w, restaurantes)
+func handlePreferred(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "restaurantId")
+	if id != "" {
+		log.Println("Requesting", r.RequestURI)
+		lunchdb.TogglePreferred(id)
+	}
+	http.Redirect(w, r, "/", 302)
 }
 
 func updateDatabase() {
@@ -108,14 +112,14 @@ func updateDatabase() {
 
 	results := gjson.Get(string(payload), "businesses").Array()
 	for _, value := range results {
-		if !lunchdb.Exists(value.Get("id").String()) {
-			lunchdb.Save(
-				restaurant.NewRestaurant(
-					value.Get("id").String(),
-					value.Get("name").String(),
-					value.Get("distance").Float(),
-					value.Get("rating").Float(),
-					value.Get("url").String()))
-		}
+		//if !lunchdb.Exists(value.Get("id").String()) {
+		lunchdb.Save(
+			restaurant.NewRestaurant(
+				value.Get("id").String(),
+				value.Get("name").String(),
+				value.Get("distance").Float(),
+				value.Get("rating").Float(),
+				value.Get("url").String()))
+		//}
 	}
 }
