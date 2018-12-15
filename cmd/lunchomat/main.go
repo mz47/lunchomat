@@ -29,7 +29,7 @@ func main() {
 	log.Println("starting application")
 	lunchdb.Connect()
 	defer lunchdb.Disconnect()
-	updateDatabase()
+	//updateDatabase()
 	startServer()
 }
 
@@ -37,25 +37,31 @@ func startServer() {
 	router := chi.NewRouter()
 	router.Get("/", handleIndex)
 	router.Get("/refresh", handleRefresh)
+	router.Get("/add", handleAddGet)
+	router.Post("/add", handleAddPost)	
 	router.Get("/visited/{restaurantId}", handleVisited)
 	router.Get("/preferred/{restaurantId}", handlePreferred)
 	router.Get("/ignored/{restaurantId}", handleIgnored)
-
 	http.ListenAndServe(":8080", router)
+}
+
+func renderTemplate(w http.ResponseWriter) {
+	restaurantes := lunchdb.ReceiveAll()
+	template, err := template.ParseFiles("../../web/index.html")
+	if err != nil {
+		log.Fatal("error while parsing template", err)
+	}
+	template.Execute(w, restaurantes)
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	log.Println("Requesting", r.RequestURI)
-	restaurantes := lunchdb.ReceiveAll()
-	template, _ := template.ParseFiles("../../web/index.html")
-	template.Execute(w, restaurantes)
+	renderTemplate(w)
 }
 
 func handleRefresh(w http.ResponseWriter, r *http.Request) {
 	log.Println("Requesting", r.RequestURI)
-	restaurantes := lunchdb.ReceiveAll()
-	template, _ := template.ParseFiles("../../web/index.html")
-	template.Execute(w, restaurantes)
+	renderTemplate(w)
 }
 
 func handleVisited(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +70,7 @@ func handleVisited(w http.ResponseWriter, r *http.Request) {
 		log.Println("Requesting", r.RequestURI)
 		lunchdb.UpdateBeenThere(id)
 	}
-	http.Redirect(w, r, "/", 302)
+	renderTemplate(w)
 }
 
 func handleIgnored(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +79,7 @@ func handleIgnored(w http.ResponseWriter, r *http.Request) {
 		log.Println("Requesting", r.RequestURI)
 		lunchdb.ToggleIgnored(id)
 	}
-	http.Redirect(w, r, "/", 302)
+	renderTemplate(w)
 }
 
 func handlePreferred(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +88,23 @@ func handlePreferred(w http.ResponseWriter, r *http.Request) {
 		log.Println("Requesting", r.RequestURI)
 		lunchdb.TogglePreferred(id)
 	}
-	http.Redirect(w, r, "/", 302)
+	renderTemplate(w)
+}
+
+func handleAddGet(w http.ResponseWriter, r *http.Request) {
+	template, err := template.ParseFiles("../../web/add.html")
+	if err != nil {
+		log.Fatal("error while parsing template", err)
+	}
+	template.Execute(w, "")
+}
+
+func handleAddPost(w http.ResponseWriter, r *http.Request) {
+	template, err := template.ParseFiles("../../web/add.html")
+	if err != nil {
+		log.Fatal("error while parsing template", err)
+	}
+	template.Execute(w, "")
 }
 
 func updateDatabase() {
@@ -95,24 +117,23 @@ func updateDatabase() {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error while fetching data from api", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+_apikey)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error while authenticating", err)
 	}
 
 	defer resp.Body.Close()
 	payload, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error while parsing api response", err)
 	}
 
 	results := gjson.Get(string(payload), "businesses").Array()
 	for _, value := range results {
-		//if !lunchdb.Exists(value.Get("id").String()) {
 		lunchdb.Save(
 			restaurant.NewRestaurant(
 				value.Get("id").String(),
@@ -120,6 +141,5 @@ func updateDatabase() {
 				value.Get("distance").Float(),
 				value.Get("rating").Float(),
 				value.Get("url").String()))
-		//}
 	}
 }

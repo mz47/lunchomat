@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/icono/1.3.0/icono.min.css" />
+    <style>
+      .enabled {
+        color: aquamarine;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>
+        <a href="/">Lunchomat</a> <a href="/refresh"><i class="icono-sync"></i></a> 
+        <a href="/add"><i class="icono-plus enabled"></i></a>
+      </h2>
+      <form action="/add" method="POST">
+        <div class="twelve columns">
+            <label for="name"><b>Restaurant Name</b></label>
+            <input class="u-full-width" type="text" placeholder="Restaurant Name" id="name" required />
+        </div>
+        <div class="twelve columns">
+            <label for="distance">Distance approx.</label>
+            <input class="u-full-width" type="number" placeholder="Restaurant Distance" id="distance" />
+        </div>
+        <div class="twelve columns">
+            <label for="rating">Rating</label>
+            <input class="u-full-width" type="text" placeholder="Restaurant Rating" id="rating" />
+        </div>
+        <label class="example-send-yourself-copy">
+            <input type="checkbox">
+            <span class="label-body">Mark as preferred</span>
+        </label>
+        <label class="example-send-yourself-copy">
+            <input type="checkbox">
+            <span class="label-body">Mark as ignored</span>
+        </label>
+        <input class="button-primary" type="submit" value="Submit">
+      </form>
+    </div>
+  </body>
+</html>

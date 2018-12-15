@@ -17,9 +17,16 @@ const _bucket = "bucket"
 func Connect() {
 	db, err := bolt.Open(_file, 0600, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error while connecting to database", err)
 	}
-	log.Printf("connected to database: %s \n", _file)
+	db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(_bucket))
+		if err != nil {
+			log.Fatal("error while creating bucket", err)
+		}
+		return nil
+	})
+	log.Println("connected to database", _file, "and created bucket", _bucket)
 	lunchdb = db
 }
 
@@ -36,19 +43,17 @@ func Save(r restaurant.Restaurant) {
 	lunchdb.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(_bucket))
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("error while getting bucket", err)
 			return err
 		}
-
 		rjson, err := json.Marshal(r)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("error while transforming json to object", err)
 			return err
 		}
-
 		err = bucket.Put([]byte(r.Id), rjson)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("error while updating", err)
 			return err
 		}
 		return nil
@@ -150,7 +155,7 @@ func ToggleIgnored(id string) {
 }
 
 // Exists checks the existance of an id
-func Exists(id string) bool {
+func exists(id string) bool {
 	exists := false
 	lunchdb.View(func(tx *bolt.Tx) error {
 		bucket, _ := tx.CreateBucketIfNotExists([]byte(_bucket))

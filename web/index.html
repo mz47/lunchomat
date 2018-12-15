@@ -5,10 +5,19 @@
   <title></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/icono/1.3.0/icono.min.css" />
+  <style>
+      .enabled {
+        color: aquamarine;
+        text-decoration: none;
+      }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h2>Lunchomat <a href="/refresh"><i class="icono-sync"></i></a></h2>
+    <h2><a href="/">Lunchomat</a>
+        <a href="/refresh"><i class="icono-sync"></i></a>
+        <a href="/add"><i class="icono-plus"></i></a>
+    </h2>
     <table class="u-full-width">
         <thead>
             <tr>
@@ -16,8 +25,6 @@
                 <td>Distance</td>
                 <td>Rating</td>
                 <td>TimesVisited</td>
-                <td>Preferred</td>
-                <td>Ignored</td>
                 <td></td>
             </tr>
         </thead>
@@ -30,12 +37,10 @@
                     <td>{{printf "%.2f" .Distance}}</td>
                     <td>{{.Rating}}</td>
                     <td>{{.TimesVisited}}</td>
-                    <td>{{.Preferred}}</td>
-                    <td>{{.Ignored}}</td>
                     <td>
                         <a href="/visited/{{.Id}}"><i class="icono-checkCircle"></i></a>
-                        <a href="/preferred/{{.Id}}"><i class="icono-heart"></i></a>
-                        <a href="/ignored/{{.Id}}"><i class="icono-crossCircle"></i></a>
+                        <a href="/preferred/{{.Id}}"><i class="icono-heart {{if .Preferred}}enabled{{end}}"></i></a>
+                        <a href="/ignored/{{.Id}}"><i class="icono-crossCircle {{if .Ignored}}enabled{{end}}"></i></a>
                     </td>
                 </tr>
             {{end}}
