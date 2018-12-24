@@ -29,7 +29,6 @@ func main() {
 	log.Println("starting application")
 	lunchdb.Connect()
 	defer lunchdb.Disconnect()
-	//updateDatabase()
 	startServer()
 }
 
@@ -38,7 +37,7 @@ func startServer() {
 	router.Get("/", handleIndex)
 	router.Get("/refresh", handleRefresh)
 	router.Get("/add", handleAddGet)
-	router.Post("/add", handleAddPost)	
+	router.Post("/add", handleAddPost)
 	router.Get("/visited/{restaurantId}", handleVisited)
 	router.Get("/preferred/{restaurantId}", handlePreferred)
 	router.Get("/ignored/{restaurantId}", handleIgnored)
@@ -61,6 +60,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 
 func handleRefresh(w http.ResponseWriter, r *http.Request) {
 	log.Println("Requesting", r.RequestURI)
+	updateDatabase()
 	renderTemplate(w)
 }
 
@@ -100,6 +100,15 @@ func handleAddGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAddPost(w http.ResponseWriter, r *http.Request) {
+	error := r.ParseForm()
+	if error != nil {
+		log.Fatalln("Could not parse form data")
+	}
+	data := r.Form
+
+	entry := restaurant.NewRestaurant(data.Get("name"), data.Get("name"), 0.0, 0.0, "")
+	lunchdb.Save(entry)
+	log.Println("Added new restaurant:", entry.Name)
 	template, err := template.ParseFiles("../../web/add.html")
 	if err != nil {
 		log.Fatal("error while parsing template", err)
@@ -134,12 +143,17 @@ func updateDatabase() {
 
 	results := gjson.Get(string(payload), "businesses").Array()
 	for _, value := range results {
-		lunchdb.Save(
-			restaurant.NewRestaurant(
-				value.Get("id").String(),
-				value.Get("name").String(),
-				value.Get("distance").Float(),
-				value.Get("rating").Float(),
-				value.Get("url").String()))
+		if value.Get("id").String() != "" && lunchdb.Exists(value.Get("id").String()) == false {
+			log.Println("Saved new restaurant:", value.Get("name").String())
+			lunchdb.Save(
+				restaurant.NewRestaurant(
+					value.Get("id").String(),
+					value.Get("name").String(),
+					value.Get("distance").Float(),
+					value.Get("rating").Float(),
+					value.Get("url").String()))
+		} else {
+			log.Println("Found existing restaurant:", value.Get("name").String())
+		}
 	}
 }

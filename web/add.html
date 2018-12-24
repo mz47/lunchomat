@@ -21,22 +21,22 @@
       <form action="/add" method="POST">
         <div class="twelve columns">
             <label for="name"><b>Restaurant Name</b></label>
-            <input class="u-full-width" type="text" placeholder="Restaurant Name" id="name" required />
+            <input class="u-full-width" type="text" placeholder="Restaurant Name" id="name" name="name" required />
         </div>
         <div class="twelve columns">
             <label for="distance">Distance approx.</label>
-            <input class="u-full-width" type="number" placeholder="Restaurant Distance" id="distance" />
+            <input class="u-full-width" type="number" placeholder="Restaurant Distance" id="distance" name="distance" />
         </div>
         <div class="twelve columns">
             <label for="rating">Rating</label>
-            <input class="u-full-width" type="text" placeholder="Restaurant Rating" id="rating" />
+            <input class="u-full-width" type="text" placeholder="Restaurant Rating" id="rating" name="rating" />
         </div>
-        <label class="example-send-yourself-copy">
-            <input type="checkbox">
+        <label class="">
+            <input type="checkbox" name="preferred">
             <span class="label-body">Mark as preferred</span>
         </label>
-        <label class="example-send-yourself-copy">
-            <input type="checkbox">
+        <label class="y">
+            <input type="checkbox" name="ignored">
             <span class="label-body">Mark as ignored</span>
         </label>
         <input class="button-primary" type="submit" value="Submit">

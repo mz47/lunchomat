@@ -82,7 +82,7 @@ func ReceiveAll() []restaurant.Restaurant {
 // UpdateBeenThere updates a restaurant by the given id
 func UpdateBeenThere(id string) {
 	var item restaurant.Restaurant
-	lunchdb.View(func(tx *bolt.Tx) error {
+	lunchdb.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(_bucket))
 		value := bucket.Get([]byte(id))
 		if value != nil {
@@ -107,7 +107,7 @@ func UpdateBeenThere(id string) {
 // TogglePreferred updates a restaurant by the given id
 func TogglePreferred(id string) {
 	var item restaurant.Restaurant
-	lunchdb.View(func(tx *bolt.Tx) error {
+	lunchdb.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(_bucket))
 		value := bucket.Get([]byte(id))
 		if value != nil {
@@ -155,10 +155,10 @@ func ToggleIgnored(id string) {
 }
 
 // Exists checks the existance of an id
-func exists(id string) bool {
+func Exists(id string) bool {
 	exists := false
 	lunchdb.View(func(tx *bolt.Tx) error {
-		bucket, _ := tx.CreateBucketIfNotExists([]byte(_bucket))
+		bucket := tx.Bucket([]byte(_bucket))
 		value := bucket.Get([]byte(id))
 		if value != nil {
 			exists = true
