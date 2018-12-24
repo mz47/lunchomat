@@ -5,6 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/google/uuid"
 
 	"github.com/go-chi/chi"
 
@@ -105,11 +108,14 @@ func handleAddPost(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln("Could not parse form data")
 	}
 	data := r.Form
+	distance, _ := strconv.ParseFloat(data.Get("distance"), 64)
+	rating, _ := strconv.ParseFloat(data.Get("rating"), 64)
+	id, _ := uuid.NewUUID()
 
-	entry := restaurant.NewRestaurant(data.Get("name"), data.Get("name"), 0.0, 0.0, "")
+	entry := restaurant.NewRestaurant(id.String(), data.Get("name"), distance, rating, "")
 	lunchdb.Save(entry)
 	log.Println("Added new restaurant:", entry.Name)
-	template, err := template.ParseFiles("../../web/add.html")
+	template, err := template.ParseFiles("../../web/index.html")
 	if err != nil {
 		log.Fatal("error while parsing template", err)
 	}
